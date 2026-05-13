@@ -1,0 +1,32 @@
+class Movil{
+  PVector pos;
+  PVector vel=new PVector(1,1);
+  float d=10;
+  
+ Movil(float px, float py){
+  pos=new PVector(px,py); 
+ }
+ void mover(){
+  pos.add(vel); 
+ }
+ void mostrar(){
+  circle(pos.x,pos.y,d); 
+ }
+ /*boolean SeVadelaPantalla(){
+  
+   return;
+ }*/
+   
+}
+  Movil m;
+
+ 
+
+void setup(){
+  size(800,800); 
+    m=new Movil(width/2,height/2); 
+    
+ }
+ void draw(){
+
+ }

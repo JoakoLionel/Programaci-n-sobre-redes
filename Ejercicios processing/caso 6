@@ -1,0 +1,29 @@
+int i=0;
+
+Movil []moviles=new Movil[i];
+
+class Movil{
+  PVector pos;
+  
+  
+ Movil(){
+  pos=new PVector(random(width), random(height)); 
+ }
+ Movil(float L.x, float L.y){
+  pos= new PVector(L.x,L.Y); 
+ } 
+
+ 
+}
+  
+
+ 
+
+void setup(){
+  size(800,800); 
+     
+    
+ }
+ void draw(){
+
+ }

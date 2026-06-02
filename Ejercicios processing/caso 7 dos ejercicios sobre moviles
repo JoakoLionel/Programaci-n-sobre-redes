@@ -1,0 +1,154 @@
+//Ejercicio 1
+
+Movil m;
+PVector Rot;
+
+void setup() {
+  size(600, 600);
+  m = new Movil();
+  Rot = new PVector(1, 1);
+}
+
+void draw() {
+  background(220);
+  Rot.rotate(PI/180);
+  m.addFuerza(Rot);
+  m.mover();
+  m.mostrar();
+}
+
+class Movil {
+  PVector pos;
+  PVector vel;
+  PVector acel;
+
+  Movil() {
+    pos = new PVector(width/2, height/2);
+    vel = new PVector(0, 0);
+    acel = new PVector(0, 0);
+  }
+
+  void mover() {
+    vel.add(acel);
+    pos.add(vel);
+    acel.mult(0);
+    checkearBordes();
+  }
+
+  void addFuerza(PVector F) {
+    acel.add(F);
+  }
+
+  void mostrar() {
+    fill(50, 150, 255);
+    stroke(0);
+    ellipse(pos.x, pos.y, 20, 20);
+  }
+
+  void checkearBordes() {
+    if (pos.x > width || pos.x < 0) {
+      vel.x = vel.x * -1;
+    }
+    if (pos.y > height || pos.y < 0) {
+      vel.y = vel.y * -1;
+    }
+  }
+}
+______________________________________________________
+
+//Ejercicio 2
+
+MovilLibre movilA;
+MovilPerseguidor movilB;
+
+void setup() {
+  size(800, 600);
+  movilA = new MovilLibre(new PVector(width/2, height/2));
+  movilB = new MovilPerseguidor(new PVector(100, 100));
+}
+
+void draw() {
+  background(240);
+  movilA.mover();
+  movilA.mostrar();
+  movilB.perseguir(movilA);
+  movilB.mover();
+  movilB.mostrar();
+}
+
+class Movil {
+  PVector pos;
+  PVector vel;
+  PVector acel;
+  float maxVel;
+  float colorR, colorG, colorB;
+
+  Movil(PVector initialPos) {
+    pos = initialPos.copy();
+    vel = new PVector(0, 0);
+    acel = new PVector(0, 0);
+    maxVel = 4.0;
+    colorR = 150;
+    colorG = 150;
+    colorB = 150;
+  }
+
+  void mover() {
+    vel.add(acel);      
+    vel.limit(maxVel);
+    pos.add(vel);     
+    acel.mult(0);      
+    checkearBordes();  
+  }
+
+  void addFuerza(PVector F) {
+    acel.add(F);
+  }
+
+  void checkearBordes() {
+    if (pos.x > width || pos.x < 0) {
+      vel.x *= -1;
+    }
+    if (pos.y > height || pos.y < 0) {
+      vel.y *= -1;
+    }
+  }
+
+  void mostrar() {
+    fill(colorR, colorG, colorB);
+    stroke(0);
+    ellipse(pos.x, pos.y, 25, 25);
+  }
+}
+
+class MovilLibre extends Movil {
+  
+  MovilLibre(PVector initialPos) {
+    super(initialPos); 
+    vel = PVector.random2D(); 
+    vel.mult(4);              
+    colorR = 50;
+    colorG = 200;
+    colorB = 50;
+  }
+}
+
+class MovilPerseguidor extends Movil {
+  float maxFuerza; 
+
+  MovilPerseguidor(PVector initialPos) {
+    super(initialPos); 
+    maxFuerza = 0.3;   
+    maxVel = 6.0;      
+    colorR = 220;
+    colorG = 50;
+    colorB = 50;
+  }
+
+  void perseguir(Movil objetivo) {
+    PVector direccion = PVector.sub(objetivo.pos, this.pos);
+    direccion.normalize();
+    direccion.mult(maxFuerza);
+    this.addFuerza(direccion);
+  }
+}

@@ -139,7 +139,7 @@ class MovilPerseguidor extends Movil {
   MovilPerseguidor(PVector initialPos) {
     super(initialPos); 
     maxFuerza = 0.3;   
-    maxVel = 6.0;      
+    maxVel = 4.0;      
     colorR = 220;
     colorG = 50;
     colorB = 50;

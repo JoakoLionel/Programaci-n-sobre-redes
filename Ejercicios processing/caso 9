@@ -1,12 +1,28 @@
 
-Movil[] circulos;
-void setup(){
-  
-  
-  
-  
-}
+Movil[] moviles = new Movil[20];
 
+void setup() {
+  size(800, 600);
+  for (int i = 0; i < moviles.length; i++) {
+    moviles[i] = new Movil();
+  }
+}
+void draw() {
+  background(240);
+
+
+  for (int i = 0; i < moviles.length; i++) {
+    for (int j = 0; j < moviles.length; j++) {
+      if (i != j) {
+        if (moviles[i].chocaCon(moviles[j])) {
+          moviles[i].alejar(moviles[j].pos);
+        }
+      }
+    }
+    moviles[i].mover();
+    moviles[i].mostrar();
+  }
+}
 
 class Movil {
   PVector pos;
@@ -14,9 +30,9 @@ class Movil {
   PVector acel;
 
   Movil() {
-    pos = new PVector(width/2, height/2);
-    vel = new PVector(0, 0);
-    acel= new PVector(0, 0);
+    pos = new PVector(random(width), random(height));
+    vel = new PVector(random(-3, 3), random(-3, 3));
+    acel = new PVector(0, 0);
   }
   void acercar(PVector otro) {
     PVector o = otro.copy();
@@ -24,15 +40,36 @@ class Movil {
     o.normalize();
     acel.add(o);
   }
+  void alejar(PVector otro) {
+    PVector o = otro.copy();
+    o.sub(pos);
+    o.normalize();
+    o.mult(-1);
+    acel.add(o);
+  }
+
+
+  boolean chocaCon(Movil otro) {
+    float distancia = PVector.dist(pos, otro.pos);
+    if (distancia < 30) {
+      return true;
+    } else {
+      return false;
+    }
+  }
   void mover() {
     vel.add(acel);
+    vel.limit(4);
     pos.add(vel);
     acel.mult(0);
     rebotar();
   }
+
   void mostrar() {
+    fill(100, 150, 250);
     ellipse(pos.x, pos.y, 30, 30);
   }
+
   void addFuerza(PVector F) {
     acel.add(F);
   }
@@ -45,3 +82,4 @@ class Movil {
     }
   }
 }
+

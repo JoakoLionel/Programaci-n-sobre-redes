@@ -1,0 +1,79 @@
+Movil[] moviles = new Movil[20];
+
+void setup() {
+  size(800, 600);
+  
+  
+  for (int i = 0; i < moviles.length; i++) {
+    moviles[i] = new Movil();
+  }
+}
+
+void draw() {
+  background(255);
+  
+
+  for (int i = 0; i < moviles.length; i++) {
+    
+  
+    if (i < moviles.length - 1) {
+    
+      moviles[i].acercar(moviles[i+1].pos); 
+    } 
+    
+    else {
+      
+      PVector raton = new PVector(mouseX, mouseY);
+      moviles[i].acercar(raton);
+    }
+    
+
+    moviles[i].mover();
+    moviles[i].mostrar();
+  }
+}
+
+class Movil {
+  PVector pos;
+  PVector vel;
+  PVector acel;
+
+  Movil() {
+    pos = new PVector(width/2, height/2);
+    vel = new PVector(0, 0);
+    acel= new PVector(0, 0);
+  }
+  
+  void acercar(PVector otro) {
+    PVector o = otro.copy();
+    o.sub(pos);
+    o.normalize();
+    acel.add(o);
+  }
+  
+  void mover() {
+    vel.add(acel);
+    vel.limit(6); 
+    pos.add(vel);
+    acel.mult(0);
+    rebotar();
+  }
+  
+  void mostrar() {
+    
+    ellipse(pos.x, pos.y, 30, 30);
+  }
+  
+  void addFuerza(PVector F) {
+    acel.add(F);
+  }
+  
+  void rebotar() {
+    if (pos.x > width || pos.x < 0) {
+      vel.x *= -1;
+    }
+    if (pos.y > height || pos.y < 0) {
+      vel.y *= -1;
+    }
+  }
+}

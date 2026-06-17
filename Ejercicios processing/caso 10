@@ -1,0 +1,78 @@
+void setup() {
+  size(800, 600);
+  for (int i = 0; i < moviles.length; i++) {
+    moviles[i] = new Movil();
+  }
+}
+
+void draw() {
+  background(255); 
+  
+  for (int i = 0; i < moviles.length; i++) {
+    for (int j = 0; j < moviles.length; j++) {
+      if (i != j) {
+        float diferencia = abs(moviles[i].c - moviles[j].c);
+        
+        float multiplicador = 0;
+        if (diferencia < 45) {
+          multiplicador = map(diferencia, 0, 45, 0.1, 0);
+        } else {
+          multiplicador = 0; 
+        }
+        
+        moviles[i].acercar(moviles[j].posicion, multiplicador);
+      }
+    }
+    
+    moviles[i].mover();
+    moviles[i].mostrar();
+  }
+}
+class Movil {
+  PVector posicion;
+  PVector vel;
+  PVector acel;
+  float c; 
+
+  Movil() {
+    posicion = new PVector(random(width), random(height));
+    vel = new PVector(random(-2, 2), random(-2, 2));
+    acel = new PVector(0, 0);
+    c = random(255);
+  }
+
+  void acercar(PVector objetivo, float multiplicador) {
+    PVector o = objetivo.copy();
+    o.sub(posicion); 
+    o.normalize();   
+    o.mult(multiplicador); 
+    acel.add(o);     
+  }
+
+  void mover() {
+    vel.add(acel);
+    vel.limit(4); 
+    posicion.add(vel);
+    
+  
+    vel.mult(0.93); 
+    
+    acel.mult(0); 
+    rebotar();
+  }
+
+  void mostrar() {
+    fill(c);
+    stroke(180); 
+    ellipse(posicion.x, posicion.y, 25, 25);
+  }
+
+  void rebotar() {
+    if (posicion.x > width || posicion.x < 0) {
+      vel.x *= -1;
+    }
+    if (posicion.y > height || posicion.y < 0) {
+      vel.y *= -1;
+    }
+  }
+}

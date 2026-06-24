@@ -1,0 +1,116 @@
+// ==========================================
+// ÁMBITO GLOBAL
+// ==========================================
+Circulo central;
+Circulo[] enemigos;
+
+void setup() {
+  size(800, 600);
+ 
+  // Instanciación del círculo central (X, Y, Diámetro, colorInicial)
+  central = new Circulo(width/2, height/2, 120, color(255, 255, 255));
+ 
+  // Inicialización del arreglo de círculos móviles
+  enemigos = new Circulo[8];
+  for (int i = 0; i < enemigos.length; i++) {
+    float x = random(50, width - 50);
+    float y = random(50, height - 50);
+    float tam = random(30, 60);
+    enemigos[i] = new Circulo(x, y, tam);
+  }
+}
+
+void draw() {
+  background(30);
+ 
+  // Variable para verificar colisiones en el frame actual
+  boolean hayColision = false;
+ 
+  // Actualización y verificación de los círculos móviles
+  for (int i = 0; i < enemigos.length; i++) {
+    enemigos[i].mover();
+    enemigos[i].rebotar();//para que no salga por la pantalla
+    enemigos[i].mostrar();
+      
+    if (central.evaluarColision(enemigos[i])) {
+      hayColision = true;
+    }
+  }
+ 
+  // Cambiar el estado del círculo central según el resultado de las colisiones
+  if (hayColision) {
+    central.cambiarColor(color(255, 50, 50)); // Rojo si hay choque
+  } else {
+    central.cambiarColor(color(255, 255, 255)); // Blanco si está a salvo
+  }
+ 
+  // Dibujar el círculo central
+  central.mostrar();
+}
+
+//pestaña de circulo (ejercicio)
+class Circulo {
+  PVector pos;
+  PVector vel;
+  float diametro;
+  color c;
+  int contadorColor = 0;
+
+  Circulo(float x, float y, float d, color colorInicial) {
+    pos = new PVector(x, y);
+    vel = new PVector(0, 0);
+    diametro = d;
+    c = colorInicial;
+  }
+
+  Circulo(float x, float y, float d) {
+    pos = new PVector(x, y);
+    vel = new PVector(random(-3, 3), random(-3, 3));
+    diametro = d;
+    c = color(150, 150, 150);
+  }
+
+  void mover() {
+    pos.add(vel);
+  }
+
+  void rebotar() {
+    if (pos.x < 0 || pos.x > width) {
+      vel.x *= -1;
+    }
+    if (pos.y < 0 || pos.y > height) {
+      vel.y *= -1;
+    }
+  }
+
+  void mostrar() {
+    fill(c);
+    ellipse(pos.x, pos.y, diametro, diametro);
+  }
+
+  boolean evaluarColision(Circulo otro) {
+    float distancia = PVector.dist(pos, otro.pos);
+    float sumaRadios = (diametro / 2) + (otro.diametro / 2);
+    if (distancia < sumaRadios) {
+      PVector direccion = PVector.sub(otro.pos, pos);
+      direccion.normalize();
+      PVector empuje = direccion.copy();
+      empuje.mult(sumaRadios - distancia);
+      otro.pos.add(empuje);
+      direccion.mult(otro.vel.mag());
+      otro.vel = direccion;
+      contadorColor = 15;
+      return true;
+    }
+    return false;
+  }
+
+  void cambiarColor(color nuevoColor) {
+    if (contadorColor > 0) {
+      c = color(255, 50, 50);
+      contadorColor--;
+    } else {
+      c = nuevoColor;
+    }
+  }
+}

@@ -107,7 +107,7 @@ Mientras ese nuevo hilo se encarga del bucle que tarda 5 segundos, el hilo origi
 
 ¿Cómo sabe el draw() de qué tamaño dibujar la barra verde si el que está haciendo el cálculo es el hilo secundario?
 
-Se comunican usando las **variables globales** (en este caso, `porcentaje` y `cargando`).
+Se comunican usando las variables globales (en este caso, `porcentaje` y `cargando`).
 Como ambos hilos viven dentro del mismo programa de Processing, comparten la misma memoria y pueden leer y escribir sobre las mismas variables.
 
 

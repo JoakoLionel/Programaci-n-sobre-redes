@@ -75,24 +75,24 @@ RESPUESTA:
 
 1. La Observación
 
-Si ejecutas ese código varias veces, vas a notar que el resultado final **nunca** llega a 2.000.000. Probablemente te dé números aleatorios como 1.834.521 o 1.103.882. Los resultados no son iguales en cada ejecución porque los datos se corrompen de forma totalmente impredecible.
+Si ejecutas ese código varias veces, vas a notar que el resultado final nunca llega a 2.000.000. Probablemente te dé números aleatorios como 1.834.521 o 1.103.882. Los resultados no son iguales en cada ejecución porque los datos se corrompen de forma totalmente impredecible.
 
 2. El Diagnóstico
 
-Lo que está pasando se conoce como una **Condición de Carrera** (Race condition). Ocurre porque los dos hilos intentan acceder y modificar el mismo dato al mismo tiempo.
+Lo que está pasando se conoce como una Condición de Carrera (Race condition). Ocurre porque los dos hilos intentan acceder y modificar el mismo dato al mismo tiempo.
 
 Como bien dice la consigna, sumar no es una sola acción. Pasa exactamente esto:
 
-* El Hilo 1 y el Hilo 2 leen la variable en el mismo milisegundo (supongamos que leen el número 5).
+El Hilo 1 y el Hilo 2 leen la variable en el mismo milisegundo (supongamos que leen el número 5).
 
 
-* Ambos procesadores hacen el cálculo mental al mismo tiempo: 5 + 1 = 6.
+Ambos procesadores hacen el cálculo mental al mismo tiempo: 5 + 1 = 6.
 
 
-* Ambos guardan (escriben) el número 6 en la variable.
+Ambos guardan (escriben) el número 6 en la variable.
 
 
-* El resultado final es que, en lugar de sumar dos puntos y llegar a 7, el programa solo sumó uno. Los números "desaparecen" porque los hilos se sobrescriben el trabajo entre sí de forma silenciosa.
+El resultado final es que, en lugar de sumar dos puntos y llegar a 7, el programa solo sumó uno. Los números "desaparecen" porque los hilos se sobrescriben el trabajo entre sí de forma silenciosa.
 
 
 
@@ -101,37 +101,37 @@ Como bien dice la consigna, sumar no es una sola acción. Pasa exactamente esto:
 La palabra clave que se necesita usar en Java es `synchronized`.
 Esta instrucción funciona literalmente como la llave de un espacio público: cuando un hilo entra al bloque de código marcado, "cierra la puerta con llave". Si el segundo hilo quiere entrar a modificar el dato al mismo tiempo, encuentra la puerta cerrada y es obligado a esperar (pausarse) hasta que el primer hilo devuelva la llave.
 
-### 4. El Reto: Arreglar el código
+4. El Reto: Arreglar el código
 
 Para que funcione, el manual explica que la instrucción `synchronized` busca una cerradura invisible, y esa cerradura solo existe en los "Objetos", no en las variables simples como nuestro contador entero. Por ende, tenemos que crear un objeto genérico para usar de candado.
 
 Acá tenés el código modificado con la solución aplicada (solo te pongo las partes que hay que cambiar/agregar):
 
 
-// Variable global compartida
+Variable global compartida
 int contadorCompartido = 0;
 
-// AGREGAMOS ESTO: Un objeto genérico que usaremos como "llave" o candado
+AGREGAMOS ESTO: Un objeto genérico que usaremos como "llave" o candado
 Object candado = new Object();
 
 Sumador hilo1;
 Sumador hilo2;
 boolean calculoTerminado = false;
 
-// ... (El setup y el draw quedan exactamente igual) ...
+(El setup y el draw quedan exactamente igual)
 
-// ==========================================
-// CLASE HILO SUMADOR MODIFICADA
-// ==========================================
+
+CLASE HILO SUMADOR MODIFICADA
+
 class Sumador extends Thread {
   void run() {
-    // Cada hilo intentará sumar 1 millón de veces
+    Cada hilo intentará sumar 1 millón de veces
     for (int i = 0; i < 1000000; i++) {
       
-      // AGREGAMOS ESTO: Sincronizamos usando el candado
-      // Solo un hilo a la vez puede entrar a este bloque
+      AGREGAMOS ESTO: Sincronizamos usando el candado
+      Solo un hilo a la vez puede entrar a este bloque
       synchronized(candado) {
-        // Sumamos 1 a la variable global de forma segura
+      Sumamos 1 a la variable global de forma segura
         contadorCompartido++;
       }
       
@@ -141,6 +141,6 @@ class Sumador extends Thread {
 
 
 
-Al probar esto, como los hilos ahora se esperan amablemente, el resultado va a dar clavado 2000000 siempre.
+el resultado va a dar clavado 2000000 siempre.
 
 

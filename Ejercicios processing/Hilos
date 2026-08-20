@@ -1,0 +1,130 @@
+// Variables para la animación fluida
+float angulo = 0;
+
+// Variables para el estado del trabajo pesado
+String estado = "Presiona el mouse para cargar los archivos del juego";
+int porcentaje = 0;
+boolean cargando = false;
+
+void setup() {
+  size(400, 300);
+  textAlign(CENTER, CENTER);
+  textSize(16);
+}
+
+void draw() {
+  background(40);
+ 
+  // ==========================================
+  // 1. ANIMACIÓN  (Hilo Principal)
+  pushMatrix();
+  translate(width/2, height/2 - 40);
+  rotate(angulo);
+  rectMode(CENTER);
+  fill(100, 200, 255);
+  rect(0, 0, 80, 80);
+  popMatrix();
+ 
+  angulo += 0.05; 
+ 
+  // ==========================================
+  // 2. TEXTO 
+
+  fill(255);
+  text(estado, width/2, height - 80);
+ 
+
+  if (cargando) {
+    noFill();
+    stroke(255);
+    rectMode(CORNER);
+    rect(50, height - 40, 300, 15); // Borde de la barra
+   
+    fill(100, 255, 100);
+    noStroke();
+
+    float anchoBarra = map(porcentaje, 0, 100, 0, 300);
+    rect(50, height - 40, anchoBarra, 15);
+  }
+}
+
+void mousePressed() {
+
+  if (!cargando) {
+    thread("cargarArchivos");
+   
+  }
+}
+
+// ==========================================
+// 3. TAREA PESADA LOCAL (Hilo Secundario)
+void cargarArchivos() {
+  cargando = true;
+  porcentaje = 0;
+  estado = "Leyendo disco duro...";
+ 
+  // Simulamos un proceso que toma tiempo, en 5 pasos.
+  // Por ejemplo: procesar 5 imágenes gigantes o leer datos muy pesados.
+  for (int i = 0; i <= 100; i += 20) {
+    porcentaje = i;
+   
+    // delay() pausa ESTE hilo (el secundario), pero el draw() sigue vivo.
+    // Simulamos que tarda 1 segundo en procesar cada parte.
+    delay(1000);
+  }
+ 
+  estado = "¡Carga de archivos completada!";
+  cargando = false;
+}
+
+
+/***********************************/
+/***********************************/
+RESPONDER:
+
+Observar la barra de progreso y el cuadrado: Mientras el porcentaje sube (lo que tarda 5 segundos en total), 
+¿el cuadrado azul deja de girar en algún momento?
+Comunicación entre hilos: 
+¿Cómo sabe el draw() de qué tamaño dibujar la barra verde si el que está haciendo el cálculo es el hilo secundario?
+Provocar el error : Vayan a mousePressed() y cambien thread("cargarArchivos"); por simplemente cargarArchivos();. ¿Qué pasa al hacer clic?
+
+
+///////////////////////////////////////////////////////////////////
+RESPUESTAS:
+1. Sobre la animación y el cuadrado giratorio
+
+Mientras el porcentaje sube (lo que tarda 5 segundos en total), ¿el cuadrado azul deja de girar en algún momento?
+
+No, el cuadrado no se detiene en ningún momento.
+Esto sucede porque al usar la instrucción `thread("cargarArchivos")`, Processing delega la tarea pesada creando un hilo de ejecución secundario.
+
+
+Mientras ese nuevo hilo se encarga del bucle que tarda 5 segundos, el hilo original (el Hilo Principal o de Animación) sigue su camino volviendo al `draw()`, dibujando tu cuadrado a 60 cuadros por segundo sin inmutarse.
+
+
+
+2. Comunicación entre hilos
+
+¿Cómo sabe el draw() de qué tamaño dibujar la barra verde si el que está haciendo el cálculo es el hilo secundario?
+
+Se comunican usando las **variables globales** (en este caso, `porcentaje` y `cargando`).
+Como ambos hilos viven dentro del mismo programa de Processing, comparten la misma memoria y pueden leer y escribir sobre las mismas variables.
+
+
+El hilo secundario modifica la variable `porcentaje` sumándole valores, y el Hilo Principal (el `draw()`) simplemente la lee varias veces por segundo para calcular el ancho de la barra.
+Un detalle extra de "buenas prácticas": Según el apunte, para que esto sea súper robusto y el Hilo Principal no termine leyendo una copia vieja en su memoria caché, la variable de control debería declararse como `volatile boolean cargando = false;`. De esa forma lo obligás a mirar siempre el valor real.
+
+
+
+3. Provocar el error (El congelamiento)
+
+¿Qué pasa al hacer clic si cambian thread("cargarArchivos"); por simplemente cargarArchivos();?
+
+ Se congela por completo la interfaz. El cuadrado azul se frena en seco y no vas a ver cómo avanza la barra de porcentaje.
+Al llamar a la función normalmente, le estás dando una "operación bloqueante" directamente al Hilo Principal.
+
+
+Como el Hilo Principal tiene que procesar las instrucciones línea por línea, se mete en el bucle for y se come los 5 segundos del `delay(1000)` de una sola vez. Mientras está ocupado haciendo eso, no puede dibujar ni hacer caso a tus clics. Recién cuando terminen los 5 segundos va a "despertar" y te va a dibujar directamente el final del proceso.
+
+
+

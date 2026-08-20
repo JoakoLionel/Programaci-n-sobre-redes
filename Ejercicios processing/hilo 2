@@ -1,0 +1,146 @@
+Observar el comportamiento impredecible de la memoria compartida cuando usamos múltiples hilos sin precaución y proponer una solución.
+
+InstruccionesAbre un nuevo sketch en Processing.Copia y pega el código que aparece más abajo.Ejecuta el programa y anota el resultado final.Cierra la ventana y vuelve a ejecutarlo al menos 3 veces más.Analiza los resultados y responde el cuestionario.
+
+// Variable global compartida
+int contadorCompartido = 0;
+
+Sumador hilo1;
+Sumador hilo2;
+boolean calculoTerminado = false;
+
+void setup() {
+  size(400, 200);
+  textSize(18);
+  textAlign(CENTER, CENTER);
+ 
+  // Creamos a los dos "trabajadores"
+  hilo1 = new Sumador();
+  hilo2 = new Sumador();
+ 
+  // Ambos empiezan a sumar al mismo tiempo
+  hilo1.start();
+  hilo2.start();
+}
+
+void draw() {
+  background(40);
+ 
+  // Comprobamos si los hilos siguen vivos
+  if (hilo1.isAlive() || hilo2.isAlive()) {
+    fill(255, 255, 0);
+    text("Los hilos están sumando...", width/2, height/2);
+  } else {
+    // Cuando ambos hilos terminan, mostramos el resultado final
+    if (!calculoTerminado) {
+      println("Carrera terminada. Resultado: " + contadorCompartido);
+      calculoTerminado = true;
+    }
+   
+    fill(255);
+    text("Esperábamos: 2000000", width/2, height/2 - 20);
+   
+    fill(255, 100, 100);
+    text("Resultado real: " + contadorCompartido, width/2, height/2 + 20);
+   
+    fill(150);
+    textSize(14);
+    text("Cierra y vuelve a ejecutar", width/2, height/2 + 60);
+  }
+}
+
+// ==========================================
+// CLASE HILO SUMADOR
+// ==========================================
+class Sumador extends Thread {
+  void run() {
+    // Cada hilo intentará sumar 1 millón de veces
+    for (int i = 0; i < 1000000; i++) {
+     
+      // Sumamos 1 a la variable global
+      contadorCompartido++;
+     
+    }
+  }
+}
+
+Cuestionario de Análisis
+Responde las siguientes preguntas en base a lo que observaste y a la teoría vista en clase:La Observación: Sabiendo que hay 2 hilos y cada uno hace un bucle de 1.000.000 de repeticiones, la matemática nos dice que el resultado debería ser 2000000. ¿Qué resultados obtuviste tú? ¿Fueron iguales en cada ejecución?El Diagnóstico: La instrucción contadorCompartido++ en realidad requiere tres pasos del procesador: Leer el valor actual, Sumarle 1, y Guardar el nuevo valor. Teniendo esto en cuenta, explica con tus propias palabras qué está pasando en el instante exacto en que ambos hilos intentan sumar puntos al mismo tiempo. ¿Por qué desaparecen números?La Solución: ¿Qué palabra clave de Java necesitamos usar para obligar a los hilos a "hacer fila" y no pisarse entre sí?
+El Reto: Arregla el código
+Modifica el código anterior para que el resultado sea siempre, sin excepción, 2000000.
+
+
+///////////////////////////////////////////////////////
+RESPUESTA:
+
+1. La Observación
+
+Si ejecutas ese código varias veces, vas a notar que el resultado final **nunca** llega a 2.000.000. Probablemente te dé números aleatorios como 1.834.521 o 1.103.882. Los resultados no son iguales en cada ejecución porque los datos se corrompen de forma totalmente impredecible.
+
+2. El Diagnóstico
+
+Lo que está pasando se conoce como una **Condición de Carrera** (Race condition). Ocurre porque los dos hilos intentan acceder y modificar el mismo dato al mismo tiempo.
+
+Como bien dice la consigna, sumar no es una sola acción. Pasa exactamente esto:
+
+* El Hilo 1 y el Hilo 2 leen la variable en el mismo milisegundo (supongamos que leen el número 5).
+
+
+* Ambos procesadores hacen el cálculo mental al mismo tiempo: 5 + 1 = 6.
+
+
+* Ambos guardan (escriben) el número 6 en la variable.
+
+
+* El resultado final es que, en lugar de sumar dos puntos y llegar a 7, el programa solo sumó uno. Los números "desaparecen" porque los hilos se sobrescriben el trabajo entre sí de forma silenciosa.
+
+
+
+ 3. La Solución
+
+La palabra clave que se necesita usar en Java es `synchronized`.
+Esta instrucción funciona literalmente como la llave de un espacio público: cuando un hilo entra al bloque de código marcado, "cierra la puerta con llave". Si el segundo hilo quiere entrar a modificar el dato al mismo tiempo, encuentra la puerta cerrada y es obligado a esperar (pausarse) hasta que el primer hilo devuelva la llave.
+
+### 4. El Reto: Arreglar el código
+
+Para que funcione, el manual explica que la instrucción `synchronized` busca una cerradura invisible, y esa cerradura solo existe en los "Objetos", no en las variables simples como nuestro contador entero. Por ende, tenemos que crear un objeto genérico para usar de candado.
+
+Acá tenés el código modificado con la solución aplicada (solo te pongo las partes que hay que cambiar/agregar):
+
+
+// Variable global compartida
+int contadorCompartido = 0;
+
+// AGREGAMOS ESTO: Un objeto genérico que usaremos como "llave" o candado
+Object candado = new Object();
+
+Sumador hilo1;
+Sumador hilo2;
+boolean calculoTerminado = false;
+
+// ... (El setup y el draw quedan exactamente igual) ...
+
+// ==========================================
+// CLASE HILO SUMADOR MODIFICADA
+// ==========================================
+class Sumador extends Thread {
+  void run() {
+    // Cada hilo intentará sumar 1 millón de veces
+    for (int i = 0; i < 1000000; i++) {
+      
+      // AGREGAMOS ESTO: Sincronizamos usando el candado
+      // Solo un hilo a la vez puede entrar a este bloque
+      synchronized(candado) {
+        // Sumamos 1 a la variable global de forma segura
+        contadorCompartido++;
+      }
+      
+    }
+  }
+}
+
+
+
+Al probar esto, como los hilos ahora se esperan amablemente, el resultado va a dar clavado 2000000 siempre.
+
+

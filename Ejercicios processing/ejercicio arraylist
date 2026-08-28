@@ -1,1 +1,64 @@
+ArrayList<Pelota> pelotas;
+void setup() {
+  
+  size(800, 600);
+  pelotas=new ArrayList<Pelota>();
+  pelotas.add(new Pelota(random(width), random(height)));
+}
 
+void draw() {
+  background(200);
+  for (Pelota p : pelotas) {
+    p.mover();
+    p.mostrar();
+  }
+}
+
+void mousePressed() {
+  for (int i=pelotas.size()-1; i>=0; i--) {
+    Pelota Aux=pelotas.get(i);
+    if (Aux.chocaCon(mouseX, mouseY)) {
+      for (int j=0; j<8; j++) {
+        pelotas.add(new Pelota(Aux.pos.x, Aux.pos.y));
+      }
+      pelotas.remove(i);
+    }
+  }
+}
+
+class Pelota {
+  PVector pos;
+  PVector vel;
+  float radio;
+
+  Pelota(float x, float y) {
+    pos = new PVector(x, y);
+    
+    vel = PVector.random2D().mult(random(2, 5));
+    radio = 15;
+  }
+
+  void mover() {
+    pos.add(vel);
+
+   
+    if (pos.x < radio || pos.x > width - radio) {
+      vel.x *= -1;
+    }
+    if (pos.y < radio || pos.y > height - radio) {
+      vel.y *= -1;
+    }
+  }
+
+  void mostrar() {
+    fill(255, 100, 100);
+    noStroke();
+    ellipse(pos.x, pos.y, radio * 2, radio * 2);
+  }
+
+  
+  boolean chocaCon(float mx, float my) {
+    float d = dist(mx, my, pos.x, pos.y);
+    return d < radio;
+  }
+}

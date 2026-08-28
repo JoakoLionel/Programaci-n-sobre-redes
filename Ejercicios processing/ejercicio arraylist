@@ -18,7 +18,7 @@ void mousePressed() {
   for (int i=pelotas.size()-1; i>=0; i--) {
     Pelota Aux=pelotas.get(i);
     if (Aux.chocaCon(mouseX, mouseY)) {
-      for (int j=0; j<8; j++) {
+      for (int j=0; j<2; j++) {
         pelotas.add(new Pelota(Aux.pos.x, Aux.pos.y));
       }
       pelotas.remove(i);
